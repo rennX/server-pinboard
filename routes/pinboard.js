@@ -17,8 +17,6 @@ const _logRequestData = function (req) {
 
 const _handleGet = function (req, res, method) {
   _logRequestData(req);
-  console.log('boogie down');
-  // options: tags
   let options = {};
   if (req.query) {
     options = {...req.query};
@@ -30,20 +28,15 @@ const _handleGet = function (req, res, method) {
   });
 };
 
-// router.get('/', function(req, res, next) {
+// router.get('/', function(req, res) {
 //   res.send('respond with a pinboard resource');
 // });
 
-router.get('/update', function (req, res, next) {
-  // _logRequestData(req);
-  // pinboard.update({}, function (err, pinboardResponse) {
-  //   if (err) res.send(err);
-  //   res.status(200).json(pinboardResponse);
-  // });
+router.get('/update', function (req, res) {
   _handleGet(req, res, 'update');
 });
 
-router.post('/add', function (req, res, next) {
+router.post('/add', function (req, res) {
   _logRequestData(req);
   // options: url (req), description (title)(req), extended, tags, dt (datetime), replace (yes/no), shared (yes/no), toread (yes/no)
   let options = {};
@@ -64,7 +57,7 @@ router.post('/add', function (req, res, next) {
 });
 
 // TODO try to get this working???
-router.delete('/delete', function (req, res, next) {
+router.delete('/delete', function (req, res) {
   _logRequestData(req);
   let options = {};
   if (req.body) {
@@ -82,56 +75,67 @@ router.delete('/delete', function (req, res, next) {
   });
 });
 
-router.get('/get', function(req, res, next) {
-  _logRequestData(req);
+router.get('/get', function(req, res) {
   // options: url, tags, dt (datetime), meta (yes/no)
-  let options = {};
-  if (req.query) {
-    options = {...req.query};
-  }
-
-  pinboard.get(options, function (err, pinboardResponse) {
-    if (err) res.send(err);
-    res.status(200).json(pinboardResponse);
-  });
+  _handleGet(req, res, 'get');
 });
 
-router.get('/dates', function(req, res, next) {
-  _logRequestData(req);
-  pinboard.dates({}, function (err, pinboardResponse) {
-    if (err) res.send(err);
-    res.status(200).json(pinboardResponse);
-  });
+router.get('/dates', function(req, res) {
+  _handleGet(req, res, 'dates');
 });
 
-router.get('/recent', function(req, res, next) {
+router.get('/recent', function(req, res) {
   _handleGet(req, res, 'recent');
 });
 
-router.get('/all', function(req, res, next) {
+router.get('/all', function(req, res) {
+  _handleGet(req, res, 'all');
+});
+
+router.get('/suggest', function(req, res) {
+  _handleGet(req, res, 'suggest');
+});
+
+router.get('/tags', function(req, res) {
+  _handleGet(req, res, 'getTags');
+});
+
+router.delete('/tags', function (req, res) {
   _logRequestData(req);
   let options = {};
+  if (req.body) {
+    options = {...req.body};
+  }
 
-  // var start = new Date();
-  // var end = new Date();
-  // start.setDate(start.getDate() - 365);
-  // var options = {
-  //   tag: 'react',
-  //   fromdt: start,
-  //   todt: end
-  // };
-  // console.log(JSON.stringify(options, null, 4));
-
-  pinboard.all(options, function (err, pinboardResponse) {
-    if (err) res.send(err);
-    res.status(200).json(pinboardResponse);
+  pinboard.delTag(options, function (err, pinboardResponse) {
+    if (err){
+      res.send(err);
+    } else if (pinboardResponse['result_code'] !== 'done' && pinboardResponse['result'] !== 'done') {
+      res.status(400).json(pinboardResponse);
+    } else {
+      res.status(200).json(pinboardResponse);
+    }
   });
 });
 
-// TODO suggest method
-// TODO getTags method
-// TODO delTag method
-// TODO renameTag method
+router.put('/tags', function (req, res) {
+  _logRequestData(req);
+  let options = {};
+  if (req.body) {
+    options = {...req.body};
+  }
+
+  pinboard.renameTag(options, function (err, pinboardResponse) {
+    if (err){
+      res.send(err);
+    } else if (pinboardResponse['result_code'] !== 'done' && pinboardResponse['result'] !== 'done') {
+      res.status(400).json(pinboardResponse);
+    } else {
+      res.status(200).json(pinboardResponse);
+    }
+  });
+});
+
 // TODO userSecret method
 // TODO api_token method
 // TODO listNotes method
