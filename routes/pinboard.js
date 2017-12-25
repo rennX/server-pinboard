@@ -56,15 +56,14 @@ router.post('/add', function (req, res) {
 
 });
 
-// TODO try to get this working???
 router.delete('/delete', function (req, res) {
   _logRequestData(req);
   let options = {};
   if (req.body) {
     options = {...req.body};
   }
-  console.log('options:', options);
-  pinboard.delete(options, function (err, pinboardResponse) {
+
+  pinboard.delete(options.url, function (err, pinboardResponse) {
     if (err){
       res.send(err);
     } else if (pinboardResponse['result_code'] !== 'done') {
@@ -136,9 +135,29 @@ router.put('/tags', function (req, res) {
   });
 });
 
-// TODO userSecret method
-// TODO api_token method
-// TODO listNotes method
-// TODO getNote method
+router.get('/user-secret', function(req, res) {
+  _handleGet(req, res, 'userSecret');
+});
+
+router.get('/api-token', function(req, res) {
+  _handleGet(req, res, 'api_token');
+});
+
+router.get('/list-notes', function(req, res) {
+  _handleGet(req, res, 'listNotes');
+});
+
+router.get('/get-note', function(req, res) {
+  _logRequestData(req);
+  let options = {};
+  if (req.query) {
+    options = {...req.query};
+  }
+
+  pinboard.getNote(options.id, function (err, pinboardResponse) {
+    if (err) res.send(err);
+    res.status(200).json(pinboardResponse);
+  });
+});
 
 module.exports = router;
